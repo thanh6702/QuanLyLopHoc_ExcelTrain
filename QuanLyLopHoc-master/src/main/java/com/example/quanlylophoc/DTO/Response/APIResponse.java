@@ -9,7 +9,8 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @JsonInclude(JsonInclude.Include.NON_NULL) //khai báo những message nào null thì không hiển thị
 public class APIResponse <T>{
-    private int code = 1000 ;
+    @Builder.Default
+    private int code = 1000;
     private String message;
     private T result;
 

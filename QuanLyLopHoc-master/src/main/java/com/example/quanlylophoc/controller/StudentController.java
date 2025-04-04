@@ -21,38 +21,40 @@ public class StudentController {
     @Autowired
     private StudentService studentService;
 
-    @PostMapping()
-    public ResponseEntity<StudentEntity> createClass(@Valid @RequestBody StudentRequest studentRequest) {
+    @PostMapping
+    public ResponseEntity<StudentEntity> createStudent(@Valid @RequestBody StudentRequest studentRequest) {
         StudentEntity studentEntity = studentService.createStudent(studentRequest);
         return ResponseEntity.ok(studentEntity);
     }
 
-    @GetMapping()
-    public ResponseEntity<List<StudentEntity>> getAllClasses() {
-        List<StudentEntity> studentEntity = studentService.getAllStudents();
-        return ResponseEntity.ok(studentEntity);
+    @GetMapping
+    public ResponseEntity<List<StudentEntity>> getAllStudents() {
+        List<StudentEntity> studentEntities = studentService.getAllStudents();
+        return ResponseEntity.ok(studentEntities);
     }
 
-    @GetMapping("/search/{name}")
-    public ResponseEntity<List<StudentEntity>> searchClassesByName(@PathVariable String name) {
-        List<StudentEntity> studentEntity = studentService.searchStudentByName(name);
-        return ResponseEntity.ok(studentEntity);
+    @GetMapping("/search/name/{name}")
+    public ResponseEntity<List<StudentEntity>> searchStudentsByName(@PathVariable String name) {
+        List<StudentEntity> studentEntities = studentService.searchStudentByName(name);
+        return ResponseEntity.ok(studentEntities);
     }
-    @GetMapping("/searchCode/{code}")
-    public ResponseEntity<List<StudentEntity>> searchClassesByCode(@PathVariable String code) {
-        List<StudentEntity> studentEntity = studentService.searchStudentByCode(code);
-        return ResponseEntity.ok(studentEntity);
+
+    @GetMapping("/search/code/{code}")
+    public ResponseEntity<List<StudentEntity>> searchStudentsByCode(@PathVariable String code) {
+        List<StudentEntity> studentEntities = studentService.searchStudentByCode(code);
+        return ResponseEntity.ok(studentEntities);
     }
+
     @PutMapping("/{id}")
-    public ResponseEntity<StudentEntity> updateClass(@Valid @PathVariable("id") Integer id,@RequestBody StudentRequest studentRequest) {
+    public ResponseEntity<StudentEntity> updateStudent(@PathVariable("id") Integer id, @Valid @RequestBody StudentRequest studentRequest) {
         StudentEntity studentEntity = studentService.updateStudent(id, studentRequest);
         return ResponseEntity.ok(studentEntity);
     }
 
-    @DeleteMapping("/delete/{id}")
-    String deleteClass(@PathVariable int id) {
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteStudent(@PathVariable("id") Integer id) {
         studentService.deleteStudent(id);
-        return "delete successfull" + id;
+        return ResponseEntity.ok("Delete successful for ID: " + id);
     }
     // Export students to Excel
     @GetMapping("/export")

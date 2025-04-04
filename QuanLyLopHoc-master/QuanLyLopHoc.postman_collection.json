@@ -1,37 +1,48 @@
 {
 	"info": {
-		"_postman_id": "3091758e-9363-4bd3-b5a3-47567644950d",
-		"name": "QuanLyLopHoc",
+		"_postman_id": "0c1113dd-8581-4579-a044-f78ca3b11833",
+		"name": "QuanLyLopHocUpDate",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "39965675"
 	},
 	"item": [
 		{
-			"name": "CreateClass",
+			"name": "GetClassWithCode",
 			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n    \"name\" : \"Dtrai\",\r\n    \"code\" : \"DCT2\"\r\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "http://localhost:8088/api/class",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8088",
-					"path": [
-						"api",
-						"class"
-					]
-				}
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "GetTeacherWithName",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "GetStudentsWithName",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "GetStudentsWithCode",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "GetTeacherWithCode",
+			"request": {
+				"method": "GET",
+				"header": []
 			},
 			"response": []
 		},
@@ -39,7 +50,56 @@
 			"name": "GetListClass",
 			"request": {
 				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "GetListStudent",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "GetListTeacher",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "getListClassWithName",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "GetWithDate",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "AddClass",
+			"request": {
+				"method": "POST",
 				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"id\": 1,\r\n    \"name\": \"Toán 12A1\",\r\n    \"code\": \"CLS001\",\r\n    \"createDate\": \"2025-01-01T00:00:00\",\r\n    \"updateDate\": \"2025-06-01T00:00:00\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
 				"url": {
 					"raw": "http://localhost:8088/api/class",
 					"protocol": "http",
@@ -56,13 +116,13 @@
 			"response": []
 		},
 		{
-			"name": "updateClass",
+			"name": "AddStudent",
 			"request": {
-				"method": "PUT",
+				"method": "POST",
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"name\" : \"Dao7\",\r\n    \"code\" : \"DCT7\"\r\n}",
+					"raw": "{\r\n    \"id\": 1,\r\n    \"name\": \"Toán 12A1\",\r\n    \"code\": \"CLS001\",\r\n    \"createDate\": \"2025-01-01T00:00:00\",\r\n    \"updateDate\": \"2025-06-01T00:00:00\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -70,7 +130,7 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:8088/api/class/15",
+					"raw": "http://localhost:8088/api/class",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -78,20 +138,28 @@
 					"port": "8088",
 					"path": [
 						"api",
-						"class",
-						"15"
+						"class"
 					]
 				}
 			},
 			"response": []
 		},
 		{
-			"name": "GetByName",
+			"name": "AddTeacher",
 			"request": {
-				"method": "GET",
+				"method": "POST",
 				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"id\": 1,\r\n    \"name\": \"Toán 12A1\",\r\n    \"code\": \"CLS001\",\r\n    \"createDate\": \"2025-01-01T00:00:00\",\r\n    \"updateDate\": \"2025-06-01T00:00:00\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
 				"url": {
-					"raw": "http://localhost:8088/api/students/search/thanh",
+					"raw": "http://localhost:8088/api/class",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -99,31 +167,7 @@
 					"port": "8088",
 					"path": [
 						"api",
-						"students",
-						"search",
-						"thanh"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "GetByCode",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "http://localhost:8088/api/class/searchCode/DCT",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8088",
-					"path": [
-						"api",
-						"class",
-						"searchCode",
-						"DCT"
+						"class"
 					]
 				}
 			},
@@ -135,7 +179,7 @@
 				"method": "DELETE",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:8088/api/class/delete/23",
+					"raw": "http://localhost:8088/api/class/25",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -144,20 +188,19 @@
 					"path": [
 						"api",
 						"class",
-						"delete",
-						"23"
+						"25"
 					]
 				}
 			},
 			"response": []
 		},
 		{
-			"name": "DeleteStudent",
+			"name": "DeleteStudents",
 			"request": {
 				"method": "DELETE",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:8088/api/students/delete/16",
+					"raw": "http://localhost:8088/api/class/25",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -165,30 +208,75 @@
 					"port": "8088",
 					"path": [
 						"api",
-						"students",
-						"delete",
-						"16"
+						"class",
+						"25"
 					]
 				}
 			},
 			"response": []
 		},
 		{
-			"name": "CreateStudent",
+			"name": "DeleteTeacher",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8088/api/class/25",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8088",
+					"path": [
+						"api",
+						"class",
+						"25"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "exportClass",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "importClass",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "exportTeacher",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "importTeachers",
 			"request": {
 				"method": "POST",
 				"header": [],
 				"body": {
-					"mode": "raw",
-					"raw": "{\r\n    \"name\" : \"CThanh\",\r\n    \"code\" : \"DCThanh1\",\r\n    \"classId\" : \"3\"\r\n}",
-					"options": {
-						"raw": {
-							"language": "json"
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": "/D:/Excel_Train/Teacher_Export.xlsx"
 						}
-					}
+					]
 				},
 				"url": {
-					"raw": "http://localhost:8088/api/students",
+					"raw": "http://localhost:8088/api/teachers/import",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -196,28 +284,30 @@
 					"port": "8088",
 					"path": [
 						"api",
-						"students"
+						"teachers",
+						"import"
 					]
 				}
 			},
 			"response": []
 		},
 		{
-			"name": "CreateTeacher",
+			"name": "importStudent",
 			"request": {
 				"method": "POST",
 				"header": [],
 				"body": {
-					"mode": "raw",
-					"raw": "{\r\n    \"name\" : \"CThanh2\",\r\n    \"code\" : \"DCThanh3\",\r\n    \"classId\" : 22\r\n}",
-					"options": {
-						"raw": {
-							"language": "json"
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": "/D:/Excel_Train/Teacher_Export.xlsx"
 						}
-					}
+					]
 				},
 				"url": {
-					"raw": "http://localhost:8088/api/teachers",
+					"raw": "http://localhost:8088/api/teachers/import",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -225,20 +315,83 @@
 					"port": "8088",
 					"path": [
 						"api",
-						"teachers"
+						"teachers",
+						"import"
 					]
 				}
 			},
 			"response": []
 		},
 		{
-			"name": "updateStudent",
+			"name": "importTeachersWithError",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": "/D:/Excel_Train/Teacher_Export.xlsx"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:8088/api/teachers/import",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8088",
+					"path": [
+						"api",
+						"teachers",
+						"import"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "importClassWithError",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": "/D:/Excel_Train/Teacher_Export.xlsx"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:8088/api/teachers/import",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8088",
+					"path": [
+						"api",
+						"teachers",
+						"import"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "UpdateTeacher",
 			"request": {
 				"method": "PUT",
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"name\" : \"CThanh\",\r\n    \"code\" : \"DCThanh1\",\r\n    \"classId\" : \"3\"\r\n}",
+					"raw": "{\r\n       \r\n        \"name\": \"Teacher nnnn\",\r\n        \"code\": \"TCH003\",\r\n        \"classId\": 3,\r\n        \"createDate\": \"2025-01-07T02:35:57.000+00:00\",\r\n        \"updateDate\": \"2025-01-07T02:35:57.000+00:00\"\r\n    }",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -246,7 +399,7 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:8088/api/students/19",
+					"raw": "http://localhost:8088/api/teachers/3",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -254,21 +407,21 @@
 					"port": "8088",
 					"path": [
 						"api",
-						"students",
-						"19"
+						"teachers",
+						"3"
 					]
 				}
 			},
 			"response": []
 		},
 		{
-			"name": "updateteacher",
+			"name": "UpdateStudents",
 			"request": {
 				"method": "PUT",
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"name\" : \"CThanh3\",\r\n    \"code\" : \"DCThanh3\",\r\n    \"classId\" : 19\r\n}",
+					"raw": "{\r\n       \r\n        \"name\": \"Teacher nnnn\",\r\n        \"code\": \"TCH003\",\r\n        \"classId\": 3,\r\n        \"createDate\": \"2025-01-07T02:35:57.000+00:00\",\r\n        \"updateDate\": \"2025-01-07T02:35:57.000+00:00\"\r\n    }",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -276,7 +429,7 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:8088/api/teachers/26",
+					"raw": "http://localhost:8088/api/teachers/3",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -285,185 +438,9 @@
 					"path": [
 						"api",
 						"teachers",
-						"26"
+						"3"
 					]
 				}
-			},
-			"response": []
-		},
-		{
-			"name": "getListStudent",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "http://localhost:8088/api/students",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8088",
-					"path": [
-						"api",
-						"students"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "getListTeacher",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "http://localhost:8088/api/teachers",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8088",
-					"path": [
-						"api",
-						"teachers"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "getListStudentByName",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "http://localhost:8088/api/students/search/thanh",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8088",
-					"path": [
-						"api",
-						"students",
-						"search",
-						"thanh"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "getListTeacherByName",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "http://localhost:8088/api/teachers/search/Tea",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8088",
-					"path": [
-						"api",
-						"teachers",
-						"search",
-						"Tea"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "getListTeacherByCode",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "http://localhost:8088/api/teachers/searchCode/DC",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8088",
-					"path": [
-						"api",
-						"teachers",
-						"searchCode",
-						"DC"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "getListStudentByCode\\",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "http://localhost:8088/api/students/searchCode/STD",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8088",
-					"path": [
-						"api",
-						"students",
-						"searchCode",
-						"STD"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "ImportClass",
-			"request": {
-				"method": "POST",
-				"header": []
-			},
-			"response": []
-		},
-		{
-			"name": "ImportStudent",
-			"request": {
-				"method": "POST",
-				"header": []
-			},
-			"response": []
-		},
-		{
-			"name": "ImportTeacher",
-			"request": {
-				"method": "POST",
-				"header": []
-			},
-			"response": []
-		},
-		{
-			"name": "ExportClass",
-			"request": {
-				"method": "GET",
-				"header": []
-			},
-			"response": []
-		},
-		{
-			"name": "ExportStudent",
-			"request": {
-				"method": "GET",
-				"header": []
-			},
-			"response": []
-		},
-		{
-			"name": "ExportTeacher",
-			"request": {
-				"method": "GET",
-				"header": []
 			},
 			"response": []
 		}

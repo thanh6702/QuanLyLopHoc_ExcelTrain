@@ -9,6 +9,7 @@ import java.util.Date;
 
 
 public class ClassRequest {
+    private Integer id;
     @Size(min = 3 , message = "NAME_INVALID")
     private String name;
     @Size(min = 3 , message = "CODE_EXISTED")
@@ -19,11 +20,20 @@ public class ClassRequest {
     public ClassRequest() {
     }
 
-    public ClassRequest(String name, String code, Date createDate, Date updateDate) {
+    public ClassRequest(Integer id, String name, String code, Date createDate, Date updateDate) {
+        this.id = id;
         this.name = name;
         this.code = code;
         this.createDate = createDate;
         this.updateDate = updateDate;
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
     }
 
     public String getName() {

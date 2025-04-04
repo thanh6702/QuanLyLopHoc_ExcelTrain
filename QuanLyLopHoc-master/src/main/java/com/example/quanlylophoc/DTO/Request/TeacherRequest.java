@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Size;
 import java.util.Date;
 
 public class TeacherRequest {
+    private Integer id;
     @Size(min = 3 , message = "NAME_INVALID")
     private String name;
     @Size(min = 3 , message = "CODE_EXISTED")
@@ -13,12 +14,24 @@ public class TeacherRequest {
     private Date createDate;
     private Date updateDate;
 
-    public TeacherRequest(String name, String code, Integer classId, Date createDate, Date updateDate) {
+    public TeacherRequest(Integer id, String name, String code, Integer classId, Date createDate, Date updateDate) {
+        this.id = id;
         this.name = name;
         this.code = code;
         this.classId = classId;
         this.createDate = createDate;
         this.updateDate = updateDate;
+    }
+
+    public TeacherRequest() {
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
     }
 
     public String getName() {

@@ -33,51 +33,57 @@ public class StudentService {
 
 
     public StudentEntity createStudent(StudentRequest studentRequest) {
+        validateStudentRequest(studentRequest, false);
         StudentEntity studentEntity = new StudentEntity();
-        studentEntity.setName(studentRequest.getName());
-        if(studentRepository.existsByCode(studentRequest.getCode())) {
-            throw new AppException(ErrorCode.CODE_EXISTED);
-        }
-        studentEntity.setCode(studentRequest.getCode());
-        studentEntity.setClassId(studentRequest.getClassId());
+        mapRequestToEntity(studentRequest, studentEntity);
         studentEntity.setCreateDate(new Date());
-        studentEntity.setUpdateDate(null);
         return studentRepository.save(studentEntity);
-
     }
 
     public List<StudentEntity> getAllStudents() {
         return studentRepository.findAll();
     }
 
-    // Tìm kiếm và phân trang lớp học theo tên và mã lớp
-//    public Page<ClassEntity> searchClasses(String name, String code, int page, int size) {
-//        Pageable pageable = PageRequest.of(page, size); // Mỗi trang 10 lớp
-//        return classRepository.findByNameContainingAndCodeContaining(name, code, pageable);
-//    }
-    public List<StudentEntity> searchStudentByName(String name){
+    public List<StudentEntity> searchStudentByName(String name) {
         return studentRepository.findByNameContainingIgnoreCase(name);
     }
-    public List<StudentEntity> searchStudentByCode(String code){
+
+    public List<StudentEntity> searchStudentByCode(String code) {
         return studentRepository.findByCodeContainingIgnoreCase(code);
     }
 
-    public StudentEntity updateStudent(Integer id,StudentRequest studentRequest) {
-        StudentEntity studentEntity = studentRepository.findById(id).orElseThrow(()
-                -> new AppException(ErrorCode.ID_NOT_FOUND));
-        studentEntity.setName(studentRequest.getName());
-        studentEntity.setCode(studentRequest.getCode());
-        studentEntity.setClassId(studentRequest.getClassId());
+    public StudentEntity updateStudent(Integer id, StudentRequest studentRequest) {
+        StudentEntity studentEntity = studentRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.ID_NOT_FOUND));
+        validateStudentRequest(studentRequest, true);
+        mapRequestToEntity(studentRequest, studentEntity);
         studentEntity.setUpdateDate(new Date());
         return studentRepository.save(studentEntity);
     }
 
     public void deleteStudent(Integer id) {
-    if(!studentRepository.existsById(id)) {
-        throw new AppException(ErrorCode.ID_NOT_FOUND);
-    }
+        if (!studentRepository.existsById(id)) {
+            throw new AppException(ErrorCode.ID_NOT_FOUND);
+        }
         studentRepository.deleteById(id);
     }
+
+    private void validateStudentRequest(StudentRequest studentRequest, boolean isUpdate) {
+        if (!isUpdate && studentRepository.existsByCode(studentRequest.getCode())) {
+            throw new AppException(ErrorCode.CODE_EXISTED);
+        }
+        if (isUpdate && studentRequest.getCode() != null &&
+                studentRepository.existsByCode(studentRequest.getCode())) {
+            throw new AppException(ErrorCode.CODE_EXISTED);
+        }
+    }
+
+    private void mapRequestToEntity(StudentRequest studentRequest, StudentEntity studentEntity) {
+        studentEntity.setName(studentRequest.getName());
+        studentEntity.setCode(studentRequest.getCode());
+        studentEntity.setClassId(studentRequest.getClassId());
+    }
+
     public ByteArrayInputStream exportStudentsToExcel() {
         List<StudentEntity> students = studentRepository.findAll();
         String filePath = "D:/Excel_Train/students.xlsx";
