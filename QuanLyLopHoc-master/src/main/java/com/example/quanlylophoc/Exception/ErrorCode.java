@@ -7,8 +7,6 @@ public enum ErrorCode {
     BAD_REQUEST(HttpStatus.BAD_REQUEST, "Bad request"),
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "Unauthorized"),
     INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error"),
-
-
     CLASSNAME_EXISTED(HttpStatus.BAD_REQUEST, "Class Name is already existed"),
     CODE_EXISTED(HttpStatus.BAD_REQUEST, "Code already existed"),
     KEY_ERROR_INVALID(HttpStatus.BAD_REQUEST, "Message Key is invalid"),
