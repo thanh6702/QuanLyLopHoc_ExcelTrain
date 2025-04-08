@@ -4,8 +4,7 @@ import com.example.quanlylophoc.DTO.Request.ClassRequest;
 import com.example.quanlylophoc.DTO.Request.ClassValidator;
 import com.example.quanlylophoc.DTO.Request.TeacherRequest;
 import com.example.quanlylophoc.DTO.Request.TeacherValidator;
-import com.example.quanlylophoc.DTO.Response.ClassValidatorResult;
-import com.example.quanlylophoc.DTO.Response.TeacherValidatorResult;
+import com.example.quanlylophoc.DTO.Response.*;
 import com.example.quanlylophoc.Exception.AppException;
 import com.example.quanlylophoc.entity.ClassEntity;
 import com.example.quanlylophoc.service.ClassService;
@@ -81,7 +80,21 @@ public class ClassController {
         classService.deleteClassById(id);
         return ResponseEntity.noContent().build();
     }
+    @GetMapping("/class/search")
+    public ResponseEntity<PagedClassResponse> searchClass(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return ResponseEntity.ok(classService.getAllClassWithSearchPaging(keyword, page, size));
+    }
 
+    @GetMapping("/class")
+    public ResponseEntity<List<ClassResponse>> getAllClassPaging(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size) {
+        return ResponseEntity.ok(classService.getAllClassWithPaging(page, size));
+    }
 
     @GetMapping("/export-template")
     public ResponseEntity<byte[]> exportTemplate() throws IOException {

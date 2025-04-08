@@ -1,6 +1,10 @@
 package com.example.quanlylophoc.controller;
 
 import com.example.quanlylophoc.DTO.Request.StudentRequest;
+import com.example.quanlylophoc.DTO.Response.PagedClassResponse;
+import com.example.quanlylophoc.DTO.Response.PagedStudentResponse;
+import com.example.quanlylophoc.DTO.Response.StudentInfoResponse;
+import com.example.quanlylophoc.DTO.Response.UserInfoResponse;
 import com.example.quanlylophoc.entity.StudentEntity;
 import com.example.quanlylophoc.service.StudentService;
 import jakarta.validation.Valid;
@@ -31,6 +35,22 @@ public class StudentController {
     public ResponseEntity<List<StudentEntity>> getAllStudents() {
         List<StudentEntity> studentEntities = studentService.getAllStudents();
         return ResponseEntity.ok(studentEntities);
+    }
+
+    @GetMapping("/class/search")
+    public ResponseEntity<PagedStudentResponse> searchClass(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return ResponseEntity.ok(studentService.getAllStudentsWithSearchPaging(keyword, page, size));
+    }
+
+    @GetMapping("/studentsList")
+    public ResponseEntity<List<StudentInfoResponse>> getAllUsersPaging(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size) {
+        return ResponseEntity.ok(studentService.getAllStudentsWithPaging(page, size));
     }
 
     @GetMapping("/search/name/{name}")

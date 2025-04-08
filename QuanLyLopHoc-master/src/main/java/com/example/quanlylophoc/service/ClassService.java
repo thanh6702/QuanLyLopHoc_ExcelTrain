@@ -2,12 +2,12 @@ package com.example.quanlylophoc.service;
 
 import com.example.quanlylophoc.DTO.Request.ClassRequest;
 import com.example.quanlylophoc.DTO.Request.TeacherRequest;
-import com.example.quanlylophoc.DTO.Response.ClassValidatorResult;
-import com.example.quanlylophoc.DTO.Response.TeacherValidatorResult;
+import com.example.quanlylophoc.DTO.Response.*;
 import com.example.quanlylophoc.Exception.AppException;
 import com.example.quanlylophoc.Exception.ErrorCode;
 import com.example.quanlylophoc.entity.ClassEntity;
 import com.example.quanlylophoc.entity.HomeRoomTeacherEntity;
+import com.example.quanlylophoc.entity.UserEntity;
 import com.example.quanlylophoc.repository.ClassRepository;
 import com.example.quanlylophoc.repository.HomeRoomTeacherRepository;
 import org.apache.poi.ss.usermodel.*;
@@ -19,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class ClassService {
@@ -65,6 +66,44 @@ public class ClassService {
         classRepository.deleteById(id);
     }
 
+    public PagedClassResponse getAllClassWithSearchPaging(String keyword, int page, int size) {
+        int offset = page * size;
+
+        List<ClassEntity> classEntities = classRepository
+                .searchClassWithPagination(keyword, size, offset);
+
+        int total = classRepository.countSearchClass(keyword);
+
+        List<ClassResponse> users = classEntities.stream()
+                .map(user -> ClassResponse.builder()
+                        .id(user.getId())
+                        .name(user.getName())
+                        .code(user.getCode())
+                        .createDate(user.getCreateDate())
+                        .updateDate(user.getUpdateDate())
+                        .build())
+                .toList();
+
+        return PagedClassResponse.builder()
+                .classs(users)
+                .total(total)
+                .build();
+    }
+
+    public List<ClassResponse> getAllClassWithPaging(int page, int size) {
+        int offset = page * size;
+        List<ClassEntity> users = classRepository.findAllUsersWithPagination(size, offset);
+
+        return users.stream()
+                .map(user -> ClassResponse.builder()
+                        .id(user.getId())
+                        .name(user.getName())
+                        .code(user.getCode())
+                        .createDate(user.getCreateDate())
+                        .updateDate(user.getUpdateDate())
+                        .build())
+                .collect(Collectors.toList());
+    }
 
     public byte[] exportClassToExcel() throws IOException {
         // Đọc file mẫu từ resources

@@ -9,13 +9,14 @@ import lombok.NoArgsConstructor;
 import java.util.Date;
 
 @Data
-@Builder
 @NoArgsConstructor
+@Builder
 @AllArgsConstructor
-public class ClassResponse {
+public class StudentInfoResponse {
     private int id;
     private String name;
     private String code;
+    private Integer classId;
     private Date createDate;
     private Date updateDate;
 }

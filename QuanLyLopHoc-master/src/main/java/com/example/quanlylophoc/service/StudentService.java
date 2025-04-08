@@ -2,10 +2,15 @@ package com.example.quanlylophoc.service;
 
 import com.example.quanlylophoc.DTO.Request.ClassRequest;
 import com.example.quanlylophoc.DTO.Request.StudentRequest;
+import com.example.quanlylophoc.DTO.Response.PagedStudentResponse;
+import com.example.quanlylophoc.DTO.Response.PagedUserResponse;
+import com.example.quanlylophoc.DTO.Response.StudentInfoResponse;
+import com.example.quanlylophoc.DTO.Response.UserInfoResponse;
 import com.example.quanlylophoc.Exception.AppException;
 import com.example.quanlylophoc.Exception.ErrorCode;
 import com.example.quanlylophoc.entity.ClassEntity;
 import com.example.quanlylophoc.entity.StudentEntity;
+import com.example.quanlylophoc.entity.UserEntity;
 import com.example.quanlylophoc.repository.ClassRepository;
 import com.example.quanlylophoc.repository.StudentRepository;
 import org.apache.poi.ss.usermodel.Cell;
@@ -22,6 +27,7 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class StudentService {
@@ -42,6 +48,47 @@ public class StudentService {
 
     public List<StudentEntity> getAllStudents() {
         return studentRepository.findAll();
+    }
+
+    public List<StudentInfoResponse> getAllStudentsWithPaging(int page, int size) {
+        int offset = page * size;
+        List<StudentEntity> users = studentRepository.findAllUsersWithPagination(size, offset);
+
+        return users.stream()
+                .map(user -> StudentInfoResponse.builder()
+                        .id(user.getId())
+                        .name(user.getName())
+                        .code(user.getCode())
+                        .classId(user.getClassId())
+                        .createDate(user.getCreateDate())
+                        .updateDate(user.getUpdateDate())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    public PagedStudentResponse getAllStudentsWithSearchPaging(String keyword, int page, int size) {
+        int offset = page * size;
+
+        List<StudentEntity> studentEntities = studentRepository
+                .searchStudentsWithPagination(keyword, size, offset);
+
+        int total = studentRepository.countSearchStudents(keyword);
+
+        List<StudentInfoResponse> users = studentEntities.stream()
+                .map(user -> StudentInfoResponse.builder()
+                        .id(user.getId())
+                        .name(user.getName())
+                        .code(user.getCode())
+                        .classId(user.getClassId())
+                        .createDate(user.getCreateDate())
+                        .updateDate(user.getUpdateDate())
+                        .build())
+                .toList();
+
+        return PagedStudentResponse.builder()
+                .students(users)
+                .total(total)
+                .build();
     }
 
     public List<StudentEntity> searchStudentByName(String name) {

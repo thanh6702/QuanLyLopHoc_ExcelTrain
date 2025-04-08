@@ -1,50 +1,23 @@
 package com.example.quanlylophoc.DTO.Response;
 
 
+import com.example.quanlylophoc.Exception.ErrorCode;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-@Builder
+@Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @JsonInclude(JsonInclude.Include.NON_NULL) //khai báo những message nào null thì không hiển thị
 public class APIResponse <T>{
-    @Builder.Default
-    private int code = 1000;
+    private int status;
+    private String errorCode;
     private String message;
-    private T result;
 
-    public APIResponse(int code, String message, T result) {
-        this.code = code;
-        this.message = message;
-        this.result = result;
+    public APIResponse(ErrorCode errorCode) {
+        this.status = errorCode.getStatus().value();
+        this.errorCode = errorCode.name();
+        this.message = errorCode.getMessage();
     }
 
-    public APIResponse() {
-
-    }
-
-    public int getCode() {
-        return code;
-    }
-
-    public void setCode(int code) {
-        this.code = code;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
-    public T getResult() {
-        return result;
-    }
-
-    public void setResult(T result) {
-        this.result = result;
-    }
 }
