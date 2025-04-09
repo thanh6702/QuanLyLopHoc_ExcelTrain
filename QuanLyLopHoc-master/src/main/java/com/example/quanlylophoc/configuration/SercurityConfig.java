@@ -28,7 +28,9 @@ public class SercurityConfig {
 
     @Value("${jwt.signerKey}")
     private String signerKey;
-    private final String[] PUBLIC_URLS = {"/auth/**"};
+    private final String[] PUBLIC_URLS = {"/auth/**","/schedules/**",
+            "/schedules/classes/{classId}/subjects","/classes/{classId}/subjects"
+    ,"/rooms/**"};
 
     private final JwtFilter jwtFilter;
     private final JWTAuthEntryPoint jwtAuthEntryPoint;

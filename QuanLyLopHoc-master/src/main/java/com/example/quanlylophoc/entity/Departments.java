@@ -1,6 +1,7 @@
 package com.example.quanlylophoc.entity;
 
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -27,5 +28,6 @@ public class Departments {
     private String createdBy;
 
     @OneToMany(mappedBy = "department", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private List<Division> divisions = new ArrayList<>();
 }

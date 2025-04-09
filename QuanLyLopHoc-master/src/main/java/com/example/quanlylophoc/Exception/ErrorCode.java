@@ -19,8 +19,14 @@ public enum ErrorCode {
     USERNAME_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "Username already exists"),
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "User not found"),
     INVALID_PASSWORD(HttpStatus.UNAUTHORIZED, "Invalid password"),
-    TEACHER_ALREADY_EXISTS_FOR_CLASS(HttpStatus.BAD_REQUEST, "Teacher already exists for class");
-
+    TEACHER_ALREADY_EXISTS_FOR_CLASS(HttpStatus.BAD_REQUEST, "Teacher already exists for class"),
+    ROOM_NOT_FOUND(HttpStatus.BAD_REQUEST, "Không tìm thấy phòng học."),
+    ROOM_ALREADY_ASSIGNED(HttpStatus.BAD_REQUEST,"Phòng học đã được phân công giảng dạy."),
+    ROOM_ALREADY_ASSIGNED_CANNOT_DELETE(HttpStatus.BAD_REQUEST, "Không thể xóa phòng học đã được phân công giảng dạy."),
+    INVALID_CONFIRMATION_CODE(HttpStatus.BAD_REQUEST,"Mã xác nhận không hợp lệ hoặc đã hết hạn."),
+    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Lỗi máy chủ nội bộ"),
+    CONFIRMATION_REQUIRED(HttpStatus.BAD_REQUEST, "Confirmation Required"),
+    CONFIRMATION_CODE_EXPIRED(HttpStatus.INTERNAL_SERVER_ERROR,"Hết hạn mã code quá 5p" );
     private final HttpStatus status;
     private final String message;
 

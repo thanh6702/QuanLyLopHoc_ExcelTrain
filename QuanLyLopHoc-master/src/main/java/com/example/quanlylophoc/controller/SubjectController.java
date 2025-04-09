@@ -2,6 +2,7 @@ package com.example.quanlylophoc.controller;
 
 import com.example.quanlylophoc.DTO.Request.SubjectDTO;
 import com.example.quanlylophoc.entity.Subject;
+import com.example.quanlylophoc.entity.Teacher;
 import com.example.quanlylophoc.service.SubjectService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +21,11 @@ public class SubjectController {
     public ResponseEntity<Subject> create(@RequestBody SubjectDTO dto) {
         return ResponseEntity.ok(subjectService.create(dto));
     }
-
+    @GetMapping("/{id}/teachers")
+    public ResponseEntity<List<Teacher>> getTeachersBySubjectId(@PathVariable Long id) {
+        List<Teacher> teachers = subjectService.getTeachersBySubjectId(id);
+        return ResponseEntity.ok(teachers);
+    }
     @GetMapping
     public ResponseEntity<List<Subject>> getAll() {
         return ResponseEntity.ok(subjectService.getAll());

@@ -3,6 +3,7 @@ package com.example.quanlylophoc.service;
 import com.example.quanlylophoc.DTO.Request.SubjectDTO;
 import com.example.quanlylophoc.configuration.SecurityUtil;
 import com.example.quanlylophoc.entity.Subject;
+import com.example.quanlylophoc.entity.Teacher;
 import com.example.quanlylophoc.repository.SubjectRepository;
 import org.springframework.stereotype.Service;
 
@@ -15,7 +16,12 @@ public class SubjectService {
     public SubjectService(SubjectRepository subjectRepository) {
         this.subjectRepository = subjectRepository;
     }
+    public List<Teacher> getTeachersBySubjectId(Long subjectId) {
+        Subject subject = subjectRepository.findById(subjectId)
+                .orElseThrow(() -> new RuntimeException("Subject not found with id: " + subjectId));
 
+        return subject.getTeachers();
+    }
     public Subject create(SubjectDTO dto) {
         Subject subject = Subject.builder()
                 .name(dto.getName())
