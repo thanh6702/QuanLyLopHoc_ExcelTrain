@@ -48,4 +48,8 @@ public class APIResponse<T> {
     public static <T> APIResponse<T> fromErrorCode(ErrorCode errorCode) {
         return new APIResponse<>(errorCode);
     }
+
+    public static Object error(String errorReadingFile) {
+        return new APIResponse<>(500, errorReadingFile, "Error", errorReadingFile);
+    }
 }

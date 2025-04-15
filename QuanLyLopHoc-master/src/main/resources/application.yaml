@@ -1,3 +1,27 @@
+#server:
+#  port: 8080
+#  servlet:
+#    context-path: /api
+#
+#spring:
+#  datasource:
+#    url: "jdbc:mysql://localhost:3306/book"
+#    username: root
+#    password: 123456
+#  jpa:
+#    hibernate:
+#      ddl-auto: update  # Tự động tạo và cập nhật database schema (chọn 'none' nếu không muốn tự động tạo schema)
+#    database-platform: org.hibernate.dialect.MySQL8Dialect
+#
+#logging:
+#  level:
+#    org.springframework: DEBUG
+#    com.example: DEBUG
+#
+#jwt:
+#  signerKey: "BaF0iztmWY0sER0dO0IWZczUEYDeADDxhD+CPzewPFnesrqV/3sXxXlmrix0AjTG"
+#  expiration: 3600000
+
 server:
   port: 8080
   servlet:
@@ -5,19 +29,21 @@ server:
 
 spring:
   datasource:
-    url: "jdbc:mysql://localhost:3306/book"
+    url: jdbc:mysql://localhost:3306/book
     username: root
     password: 123456
   jpa:
     hibernate:
-      ddl-auto: update  # Tự động tạo và cập nhật database schema (chọn 'none' nếu không muốn tự động tạo schema)
+      ddl-auto: update
     database-platform: org.hibernate.dialect.MySQL8Dialect
-
-logging:
-  level:
-    org.springframework: DEBUG
-    com.example: DEBUG
 
 jwt:
   signerKey: "BaF0iztmWY0sER0dO0IWZczUEYDeADDxhD+CPzewPFnesrqV/3sXxXlmrix0AjTG"
-  expiration: 3600000
+  expiration: 360000000
+
+
+minio:
+  url: http://localhost:9000
+  access-key: minioadmin
+  secret-key: minio123
+  bucket: user-avatar

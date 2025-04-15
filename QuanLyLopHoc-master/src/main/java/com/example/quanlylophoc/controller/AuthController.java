@@ -2,18 +2,19 @@ package com.example.quanlylophoc.controller;
 
 import com.example.quanlylophoc.DTO.Request.LoginRequest;
 import com.example.quanlylophoc.DTO.Request.RegisterRequest;
-import com.example.quanlylophoc.DTO.Response.PagedUserResponse;
-import com.example.quanlylophoc.DTO.Response.UserInfoResponse;
-import com.example.quanlylophoc.DTO.Response.UserInforRegisterResponse;
+import com.example.quanlylophoc.DTO.Request.UserProfileRequest;
+import com.example.quanlylophoc.DTO.Response.*;
 import com.example.quanlylophoc.configuration.JwtTokenProvider;
 import com.example.quanlylophoc.entity.UserEntity;
 import com.example.quanlylophoc.repository.UserRepository;
 import com.example.quanlylophoc.service.AuthService;
+import com.example.quanlylophoc.service.MinioService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -25,76 +26,72 @@ public class AuthController {
     private final AuthService authService;
     private final JwtTokenProvider jwtTokenProvider;
     private final UserRepository userRepository;
+    private final MinioService minioService;
 
-    public AuthController(JwtTokenProvider jwtTokenProvider, UserRepository userRepository,AuthService authService) {
+
+    public AuthController(JwtTokenProvider jwtTokenProvider, UserRepository userRepository, AuthService authService, MinioService minioService) {
         this.jwtTokenProvider = jwtTokenProvider;
         this.userRepository = userRepository;
         this.authService = authService;
+        this.minioService = minioService;
     }
+
+    @PutMapping("/{id}/profile")
+    public ResponseEntity<?> updateProfile(
+            @PathVariable int id,
+            @ModelAttribute UserProfileRequest request
+    ) {
+        UserEntity updated = authService.updateUserProfile(id, request.getName(),request.getUsername() ,request.getPassword(), request.getAvatar());
+        return ResponseEntity.ok(APIResponse.success(updated));
+    }
+
+    @PutMapping("/{id}/profileConvertBase64")
+    public ResponseEntity<?> updateProfileBase64(
+            @PathVariable int id,
+            @ModelAttribute UserProfileRequest request
+    ) {
+        UserEntity updated = authService.updateUserProfileConvertBase64(
+                id,
+                request.getName(),
+                request.getUsername(),
+                request.getPassword(),
+                request.getAvatar()
+        );
+
+        UserResponse response = minioService.toUserResponse(updated);
+        return ResponseEntity.ok(APIResponse.success(response));
+    }
+
 
     @PostMapping("/register")
-    public ResponseEntity<UserInforRegisterResponse> register(@RequestBody RegisterRequest request) {
-        return ResponseEntity.ok(authService.register(request));
+    public ResponseEntity<APIResponse<UserInforRegisterResponse>> register(@RequestBody RegisterRequest request) {
+        var result = authService.register(request);
+        return ResponseEntity.ok(APIResponse.success(result));
     }
-
-    @GetMapping("/users")
-    public ResponseEntity<List<UserInfoResponse>> getAllUsersPaging(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "5") int size) {
-        return ResponseEntity.ok(authService.getAllUsersWithPaging(page, size));
-    }
-    @GetMapping("/paging")
-    public ResponseEntity<Page<UserEntity>> getAllUsers(Pageable pageable) {
-        Page<UserEntity> users = authService.getAllUsersWithPageable(pageable);
-        return ResponseEntity.ok(users);
-    }
-
-    @GetMapping("/users/custom")
-    public ResponseEntity<PagedUserResponse> getUsersCustomPaging(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
-    ) {
-        return ResponseEntity.ok(authService.getAllUsersWithCustomPaging(page, size));
-    }
-
-    @GetMapping("/users/search")
-    public ResponseEntity<PagedUserResponse> searchUsers(
-            @RequestParam(required = false) String keyword,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
-    ) {
-        return ResponseEntity.ok(authService.getAllUsersWithSearchPaging(keyword, page, size));
-    }
-
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody LoginRequest request) {
-        System.out.println("Received login request: " + request);  // Debug log
-
+    public ResponseEntity<APIResponse<String>> login(@RequestBody LoginRequest request) {
         String token = authService.login(request);
 
         if (token.startsWith("Bearer ")) {
-            return ResponseEntity.ok(token);
-        } else {
-            System.out.println("Login failed, invalid token: " + token);
-            return ResponseEntity.status(401).body("Invalid credentials or token");
+            return ResponseEntity.ok(APIResponse.success(token));
         }
+        return ResponseEntity.status(401).body(APIResponse.error(401, "Invalid credentials or token" , null));
     }
 
-    @GetMapping("/user")
-    public ResponseEntity<List<UserInfoResponse>> getAllUsers() {
-        return ResponseEntity.ok(authService.getAllUsers());
+    @PostMapping("/logout")
+    public ResponseEntity<APIResponse<String>> logout(Pageable pageable) {
+        return ResponseEntity.ok(APIResponse.success("Logout successful"));
     }
-
 
     @GetMapping("/info")
-    public ResponseEntity<?> getUserInfo(@RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<APIResponse<UserInfoResponse>> getUserInfo(@RequestHeader("Authorization") String authHeader) {
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return ResponseEntity.badRequest().body("Invalid token");
+            return ResponseEntity.badRequest().body(APIResponse.error(400, "Invalid token",null));
         }
 
         String token = authHeader.substring(7);
-        String username = jwtTokenProvider.extractUsername(token); // lấy username từ token
+        String username = jwtTokenProvider.extractUsername(token);
 
         UserEntity user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
@@ -105,11 +102,40 @@ public class AuthController {
                 .username(user.getUsername())
                 .build();
 
-        return ResponseEntity.ok(userInfo);
+        return ResponseEntity.ok(APIResponse.success(userInfo));
     }
 
-    @PostMapping("/logout")
-    public ResponseEntity<String> logout(Pageable pageable) {
-        return ResponseEntity.ok("Logout successful");
+    @GetMapping("/user")
+    public ResponseEntity<APIResponse<List<UserInfoResponse>>> getAllUsers() {
+        return ResponseEntity.ok(APIResponse.success(authService.getAllUsers()));
+    }
+
+    @GetMapping("/users")
+    public ResponseEntity<APIResponse<List<UserInfoResponse>>> getAllUsersPaging(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size) {
+        return ResponseEntity.ok(APIResponse.success(authService.getAllUsersWithPaging(page, size)));
+    }
+
+    @GetMapping("/paging")
+    public ResponseEntity<APIResponse<Page<UserEntity>>> getAllUsers(Pageable pageable) {
+        return ResponseEntity.ok(APIResponse.success(authService.getAllUsersWithPageable(pageable)));
+    }
+
+    @GetMapping("/users/custom")
+    public ResponseEntity<APIResponse<PagedUserResponse>> getUsersCustomPaging(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return ResponseEntity.ok(APIResponse.success(authService.getAllUsersWithCustomPaging(page, size)));
+    }
+
+    @GetMapping("/users/search")
+    public ResponseEntity<APIResponse<PagedUserResponse>> searchUsers(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return ResponseEntity.ok(APIResponse.success(authService.getAllUsersWithSearchPaging(keyword, page, size)));
     }
 }

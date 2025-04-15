@@ -17,6 +17,7 @@
     import org.springframework.http.HttpStatus;
     import org.springframework.security.crypto.password.PasswordEncoder;
     import org.springframework.stereotype.Service;
+    import org.springframework.web.multipart.MultipartFile;
     import org.springframework.web.server.ResponseStatusException;
 
     import java.util.List;
@@ -29,15 +30,66 @@
         private final UserRepository userRepository;
         private final PasswordEncoder passwordEncoder;
         private final JwtTokenProvider jwtTokenProvider;
+        private final MinioService minioService;
 
         public AuthService(UserRepository userRepository,
                            PasswordEncoder passwordEncoder,
-                           JwtTokenProvider jwtTokenProvider) {
+                           JwtTokenProvider jwtTokenProvider, MinioService minioService) {
             this.userRepository = userRepository;
             this.passwordEncoder = passwordEncoder;
             this.jwtTokenProvider = jwtTokenProvider;
+            this.minioService = minioService;
         }
 
+
+        public UserEntity updateUserProfile(int userId, String name,String username ,String password,MultipartFile avatar) {
+            UserEntity user = userRepository.findById(userId)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+            if (name != null) {
+                user.setName(name);
+            }
+            if (password != null && !password.isBlank()) {
+                user.setPassword(passwordEncoder.encode(password));
+            }
+            if (username != null && !username.isBlank()) {
+                user.setUsername(username);
+            }
+            if (avatar != null && !avatar.isEmpty()) {
+                String objectName = "avatars/user_" + userId + "_" + System.currentTimeMillis();
+                String avatarUrl = minioService.uploadFile(avatar, objectName);
+                user.setAvatarUrl(avatarUrl);
+            }
+            return userRepository.save(user);
+        }
+
+        public UserEntity updateUserProfileConvertBase64(
+                int userId,
+                String name,
+                String username,
+                String password,
+                MultipartFile avatar
+        ) {
+            UserEntity user = userRepository.findById(userId)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+
+            if (name != null) {
+                user.setName(name);
+            }
+            if (username != null && !username.isBlank()) {
+                user.setUsername(username);
+            }
+            if (password != null && !password.isBlank()) {
+                user.setPassword(passwordEncoder.encode(password));
+            }
+
+            if (avatar != null && !avatar.isEmpty()) {
+                String objectName = "avatars/user_" + userId + "_" + System.currentTimeMillis();
+                String avatarUrl = minioService.uploadFile(avatar, objectName);
+                user.setAvatarUrl(avatarUrl); // Chỉ lưu URL, base64 chỉ dùng để response
+            }
+
+            return userRepository.save(user);
+        }
 
         public UserInforRegisterResponse register(RegisterRequest request) {
             Optional<UserEntity> existingUser = userRepository.findByUsername(request.getUsername());

@@ -29,76 +29,76 @@ public class ClassController {
     @Autowired
     private ClassService classService;
 
-    // Lấy tất cả lớp học
     @GetMapping
-    public ResponseEntity<List<ClassEntity>> getAllClasses() {
-        return ResponseEntity.ok(classService.getAllClasses());
+    public ResponseEntity<APIResponse<List<ClassEntity>>> getAllClasses() {
+        return ResponseEntity.ok(APIResponse.success(classService.getAllClasses()));
     }
 
-    // Lấy thông tin lớp học theo ID
     @GetMapping("/{id}")
-    public ResponseEntity<ClassEntity> getClassById(@PathVariable int id) {
+    public ResponseEntity<APIResponse<ClassEntity>> getClassById(@PathVariable int id) {
         return classService.getClassById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+                .map(classEntity -> ResponseEntity.ok(APIResponse.success(classEntity)))
+                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(APIResponse.error(404, "NOT_FOUND", "Lớp học không tồn tại")));
     }
-    // Tìm lớp học theo code
+
     @GetMapping("/code/{code}")
-    public ResponseEntity<ClassEntity> getClassByCode(@PathVariable String code) {
+    public ResponseEntity<APIResponse<ClassEntity>> getClassByCode(@PathVariable String code) {
         return classService.getClassByCode(code)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+                .map(classEntity -> ResponseEntity.ok(APIResponse.success(classEntity)))
+                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(APIResponse.error(404, "NOT_FOUND", "Không tìm thấy lớp với mã code")));
     }
 
-    // Tìm lớp học theo từ khóa trong tên
     @GetMapping("/search")
-    public ResponseEntity<List<ClassEntity>> searchClassesByName(@RequestParam String name) {
-        return ResponseEntity.ok(classService.searchClassesByName(name));
+    public ResponseEntity<APIResponse<List<ClassEntity>>> searchClassesByName(@RequestParam String name) {
+        return ResponseEntity.ok(APIResponse.success(classService.searchClassesByName(name)));
     }
 
-    // Lấy danh sách lớp học trong khoảng ngày tạo
     @GetMapping("/created-between")
-    public ResponseEntity<List<ClassEntity>> getClassesCreatedBetween(
-            @RequestParam("startDate")
-            @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
-
-            @RequestParam("endDate")
-            @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate) {
-        return ResponseEntity.ok(classService.getClassesCreatedBetween(startDate, endDate));
+    public ResponseEntity<APIResponse<List<ClassEntity>>> getClassesCreatedBetween(
+            @RequestParam("startDate") @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
+            @RequestParam("endDate") @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate) {
+        return ResponseEntity.ok(APIResponse.success(classService.getClassesCreatedBetween(startDate, endDate)));
     }
 
-    // Tạo hoặc cập nhật lớp học
     @PostMapping
-    public ResponseEntity<ClassEntity> createOrUpdateClass(@RequestBody ClassEntity classEntity) {
-        ClassEntity savedClass = classService.saveClass(classEntity);
-        return ResponseEntity.ok(savedClass);
+    public ResponseEntity<APIResponse<ClassEntity>> createOrUpdateClass(@RequestBody ClassEntity classEntity) {
+        return ResponseEntity.ok(APIResponse.success(classService.saveClass(classEntity)));
     }
 
-    // Xóa lớp học theo ID
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteClassById(@PathVariable int id) {
-        classService.deleteClassById(id);
-        return ResponseEntity.noContent().build();
-    }
-    @GetMapping("/class/search")
-    public ResponseEntity<PagedClassResponse> searchClass(
+    @GetMapping("/class/with-subjects")
+    public ResponseEntity<APIResponse<PagedClassResponse>> getClassWithSubjectsPaging(
             @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
-    ) {
-        return ResponseEntity.ok(classService.getAllClassWithSearchPaging(keyword, page, size));
+            @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(APIResponse.success(classService.getClassWithSubjectsPaging(keyword, page, size)));
+    }
+
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<APIResponse<String>> deleteClassById(@PathVariable int id) {
+        classService.deleteClassById(id);
+        return ResponseEntity.ok(APIResponse.success("Xóa lớp học thành công"));
+    }
+
+    @GetMapping("/class/search")
+    public ResponseEntity<APIResponse<PagedClassResponse>> searchClass(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(APIResponse.success(classService.getAllClassWithSearchPaging(keyword, page, size)));
     }
 
     @GetMapping("/class")
-    public ResponseEntity<List<ClassResponse>> getAllClassPaging(
+    public ResponseEntity<APIResponse<List<ClassResponse>>> getAllClassPaging(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size) {
-        return ResponseEntity.ok(classService.getAllClassWithPaging(page, size));
+        return ResponseEntity.ok(APIResponse.success(classService.getAllClassWithPaging(page, size)));
     }
 
     @GetMapping("/export-template")
     public ResponseEntity<byte[]> exportTemplate() throws IOException {
-        // Xử lý file được gửi qua form-data
         byte[] errorsFile = classService.exportClassToExcel();
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=class_with_errors.xlsx")
@@ -107,85 +107,65 @@ public class ClassController {
     }
 
     @PostMapping("/export-error-records")
-    public ResponseEntity<byte[]> exportErrorRecords(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<?> exportErrorRecords(@RequestParam("file") MultipartFile file) {
         try {
-            // Thực hiện validate dữ liệu từ file upload
-            List<ClassRequest> classRequests = classService.parseTeachersFromExcel(file); // Phương thức đọc file và map thành TeacherRequest
+            List<ClassRequest> classRequests = classService.parseTeachersFromExcel(file);
             List<ClassValidatorResult> validationResults = ClassValidator.validateClass(classRequests);
 
-            // Lọc ra các bản ghi lỗi
             List<ClassValidatorResult> errorRecords = validationResults.stream()
                     .filter(ClassValidatorResult::hasErrors)
                     .collect(Collectors.toList());
 
             if (errorRecords.isEmpty()) {
-                return ResponseEntity.ok().body("No error records found".getBytes());
+                return ResponseEntity.ok(APIResponse.success("No error records found"));
             }
 
-            // Tạo file Excel chứa các bản ghi lỗi
             byte[] errorFile = classService.generateErrorExcel(validationResults);
 
-            // Trả về file Excel dưới dạng byte[]
             HttpHeaders headers = new HttpHeaders();
             headers.setContentDispositionFormData("attachment", "errorClass-records.xlsx");
             headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+
             return ResponseEntity.ok().headers(headers).body(errorFile);
 
         } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error reading file".getBytes());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(APIResponse.error("Error reading file"));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected error occurred".getBytes());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(APIResponse.error("Unexpected error occurred"));
         }
     }
 
-
-    // API Import Classes
     @PostMapping("/import")
     public ResponseEntity<?> importClasses(@RequestParam("file") MultipartFile file) {
         if (file.isEmpty()) {
-            return ResponseEntity.badRequest().body(Map.of("status", "error", "message", "No file provided"));
+            return ResponseEntity.badRequest().body(APIResponse.error(400, "NO_FILE", "No file provided"));
         }
 
         try {
-            // Gọi service để import dữ liệu từ file Excel
             Map<String, Object> importResult = classService.importClassesFromExcel(new ByteArrayInputStream(file.getBytes()));
 
-            // Kiểm tra nếu có lỗi (skippedClasses)
             List<String> skippedClasses = (List<String>) importResult.get("skippedClasses");
             if (!skippedClasses.isEmpty()) {
-                // Nếu có lỗi, tạo file chứa lỗi và trả về cho người dùng
                 ByteArrayInputStream errorFile = classService.exportErrorFile(skippedClasses);
 
-                // Tạo header HTTP cho file lỗi
                 HttpHeaders headers = new HttpHeaders();
                 headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-                headers.setContentDisposition(ContentDisposition.attachment()
-                        .filename("error-classes.xlsx")
-                        .build());
+                headers.setContentDisposition(ContentDisposition.attachment().filename("error-classes.xlsx").build());
 
-                byte[] errorData = errorFile.readAllBytes();
-
-                // Trả về file lỗi dưới dạng byte[]
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                         .headers(headers)
-                        .body(errorData); // Trả về mảng byte chứa file lỗi
+                        .body(errorFile.readAllBytes());
             }
 
-            // Trả về kết quả thành công nếu không có lỗi
-            return ResponseEntity.ok().body(Map.of(
-                    "status", "success",
-                    "importedClasses", importResult.get("importedClasses")
-            ));
+            return ResponseEntity.ok(APIResponse.success(importResult.get("importedClasses")));
 
         } catch (IOException e) {
-            // Xử lý lỗi khi đọc file
-            return ResponseEntity.internalServerError().body(Map.of(
-                    "status", "error",
-                    "message", "File import failed: " + e.getMessage()
-            ));
+            return ResponseEntity.internalServerError()
+                    .body(APIResponse.error(500, "IMPORT_FAILED", "File import failed: " + e.getMessage()));
         }
     }
-
-
-
 }
+
+

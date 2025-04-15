@@ -30,11 +30,11 @@ public class Teacher {
     @ManyToMany(mappedBy = "teachers")
     @JsonManagedReference(value = "teacher-subject")
     private List<Subject> subjects = new ArrayList<>();
-    @OneToMany(mappedBy = "head")
-    @JsonManagedReference(value = "head-subjectGroup")
-    private List<SubjectGroup> headOfGroups = new ArrayList<>();
-
-    @OneToMany(mappedBy = "deputy")
-    @JsonManagedReference(value = "deputy-subjectGroup")
-    private List<SubjectGroup> deputyOfGroups = new ArrayList<>();
+//    @OneToMany(mappedBy = "head")
+//    @JsonManagedReference(value = "head-subjectGroup")
+//    private List<SubjectGroup> headOfGroups = new ArrayList<>();
+//
+//    @OneToMany(mappedBy = "deputy")
+//    @JsonManagedReference(value = "deputy-subjectGroup")
+//    private List<SubjectGroup> deputyOfGroups = new ArrayList<>();
 }

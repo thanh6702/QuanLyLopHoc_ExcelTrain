@@ -1,14 +1,11 @@
 package com.example.quanlylophoc.controller;
 
-import com.example.quanlylophoc.entity.Departments;
+import com.example.quanlylophoc.DTO.Response.APIResponse;
 import com.example.quanlylophoc.entity.Teacher;
 import com.example.quanlylophoc.service.TeacherService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -16,16 +13,18 @@ import java.util.List;
 @RequestMapping("/teacher")
 @RequiredArgsConstructor
 public class TeacherController {
+
     private final TeacherService teacherService;
 
     @GetMapping
-    public ResponseEntity<List<Teacher>> getAll() {
-        return ResponseEntity.ok(teacherService.getAllTeachers());
+    public ResponseEntity<APIResponse<List<Teacher>>> getAll() {
+        List<Teacher> teachers = teacherService.getAllTeachers();
+        return ResponseEntity.ok(APIResponse.success(teachers));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Teacher> getById(@PathVariable Long id) {
+    public ResponseEntity<APIResponse<Teacher>> getById(@PathVariable Long id) {
         Teacher teacher = teacherService.getTeacherById(id);
-        return ResponseEntity.ok(teacher);
+        return ResponseEntity.ok(APIResponse.success(teacher));
     }
 }

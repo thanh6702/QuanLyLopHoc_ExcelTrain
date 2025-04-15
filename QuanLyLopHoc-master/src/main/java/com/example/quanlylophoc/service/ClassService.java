@@ -10,6 +10,8 @@ import com.example.quanlylophoc.entity.HomeRoomTeacherEntity;
 import com.example.quanlylophoc.entity.UserEntity;
 import com.example.quanlylophoc.repository.ClassRepository;
 import com.example.quanlylophoc.repository.HomeRoomTeacherRepository;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddressList;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -104,6 +106,40 @@ public class ClassService {
                         .build())
                 .collect(Collectors.toList());
     }
+
+    public PagedClassResponse getClassWithSubjectsPaging(String keyword, int page, int size) {
+        int offset = page * size;
+        List<Map<String, Object>> rawData = classRepository.searchClassWithSubjectsPaging(keyword, size, offset);
+
+        List<ClassWithSubjectDTO> classList = rawData.stream().map(row -> {
+            ObjectMapper mapper = new ObjectMapper();
+            List<Map<String, Object>> subjectList = new ArrayList<>();
+            try {
+                String json = row.get("subjects").toString();
+                subjectList = mapper.readValue(json, new TypeReference<>() {});
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            return ClassWithSubjectDTO.builder()
+                    .id(((Number) row.get("id")).intValue())
+                    .name((String) row.get("name"))
+                    .code((String) row.get("code"))
+                    .createDate((Date) row.get("createDate"))
+                    .updateDate((Date) row.get("updateDate"))
+                    .subjects(subjectList)
+                    .build();
+        }).collect(Collectors.toList());
+
+        int total = classRepository.countClassWithSubjects(keyword);
+
+        return PagedClassResponse.builder()
+                .classs(classList)
+                .total(total)
+                .build();
+    }
+
+
 
     public byte[] exportClassToExcel() throws IOException {
         // Đọc file mẫu từ resources
