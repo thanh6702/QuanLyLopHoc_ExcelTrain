@@ -75,18 +75,12 @@ public class HomeRoomTeacherController {
     @PostMapping("/import")
     public ResponseEntity<?> importTeachers(@RequestParam("file") MultipartFile file) {
         try {
-            // Gọi service để xử lý import và nhận danh sách lỗi
             List<String> errorMessages = homeRoomTeacherService.importTeachersFromExcel(file);
-
-            // Nếu có lỗi, trả về danh sách lỗi với mã 400
             if (!errorMessages.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessages); // Trả về lỗi cho FE
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessages);
             }
-
-            // Nếu không có lỗi, trả về thông báo thành công
             return ResponseEntity.ok("Import successful");
         } catch (AppException e) {
-            // Xử lý lỗi custom AppException
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (IOException e) {
             // Xử lý lỗi đọc file

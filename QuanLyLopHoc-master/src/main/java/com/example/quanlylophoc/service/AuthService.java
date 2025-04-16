@@ -85,7 +85,7 @@
             if (avatar != null && !avatar.isEmpty()) {
                 String objectName = "avatars/user_" + userId + "_" + System.currentTimeMillis();
                 String avatarUrl = minioService.uploadFile(avatar, objectName);
-                user.setAvatarUrl(avatarUrl); // Chỉ lưu URL, base64 chỉ dùng để response
+                user.setAvatarUrl(avatarUrl);
             }
 
             return userRepository.save(user);

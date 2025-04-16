@@ -8,6 +8,7 @@ import com.example.quanlylophoc.configuration.JwtTokenProvider;
 import com.example.quanlylophoc.entity.UserEntity;
 import com.example.quanlylophoc.repository.UserRepository;
 import com.example.quanlylophoc.service.AuthService;
+import com.example.quanlylophoc.service.EmailService;
 import com.example.quanlylophoc.service.MinioService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,13 +28,21 @@ public class AuthController {
     private final JwtTokenProvider jwtTokenProvider;
     private final UserRepository userRepository;
     private final MinioService minioService;
+    private final EmailService emailService;
 
 
-    public AuthController(JwtTokenProvider jwtTokenProvider, UserRepository userRepository, AuthService authService, MinioService minioService) {
+    public AuthController(JwtTokenProvider jwtTokenProvider, UserRepository userRepository, AuthService authService, MinioService minioService, EmailService emailService) {
         this.jwtTokenProvider = jwtTokenProvider;
         this.userRepository = userRepository;
         this.authService = authService;
         this.minioService = minioService;
+        this.emailService = emailService;
+    }
+
+    @GetMapping("/test")
+    public String testMail() {
+        emailService.sendEmail("thanhdao672002@gmail.com", "Hello!", "Test mail from Spring Boot");
+        return "Email sent!";
     }
 
     @PutMapping("/{id}/profile")

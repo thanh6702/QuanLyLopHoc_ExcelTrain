@@ -42,6 +42,21 @@ jwt:
   expiration: 360000000
 
 
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: thanhdao672002@gmail.com
+    password: xjog xldx smay krwi
+    protocol: smtp
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+
+
 minio:
   url: http://localhost:9000
   access-key: minioadmin

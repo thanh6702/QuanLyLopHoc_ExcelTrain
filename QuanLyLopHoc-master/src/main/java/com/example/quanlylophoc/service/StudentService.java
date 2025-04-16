@@ -8,6 +8,7 @@ import com.example.quanlylophoc.DTO.Response.StudentInfoResponse;
 import com.example.quanlylophoc.DTO.Response.UserInfoResponse;
 import com.example.quanlylophoc.Exception.AppException;
 import com.example.quanlylophoc.Exception.ErrorCode;
+import com.example.quanlylophoc.configuration.DateConfig;
 import com.example.quanlylophoc.entity.ClassEntity;
 import com.example.quanlylophoc.entity.StudentEntity;
 import com.example.quanlylophoc.entity.UserEntity;
@@ -24,6 +25,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -32,9 +34,11 @@ import java.util.stream.Collectors;
 @Service
 public class StudentService {
     private final StudentRepository studentRepository;
+    private final DateConfig dateConfig;
 
-    public StudentService(StudentRepository studentRepository) {
+    public StudentService(StudentRepository studentRepository, DateConfig dateConfig) {
         this.studentRepository = studentRepository;
+        this.dateConfig = dateConfig;
     }
 
 
@@ -42,7 +46,40 @@ public class StudentService {
         validateStudentRequest(studentRequest, false);
         StudentEntity studentEntity = new StudentEntity();
         mapRequestToEntity(studentRequest, studentEntity);
-        studentEntity.setCreateDate(new Date());
+        //1.
+//        if (studentRequest.getCreateDate() != null) {
+//            studentEntity.setCreateDate(studentRequest.getCreateDate());
+//        } else {
+//            studentEntity.setCreateDate(dateConfig.now());
+//        }
+//        if (studentRequest.getUpdateDate() != null) {
+//            studentEntity.setUpdateDate(studentRequest.getUpdateDate());
+//        } else {
+//            studentEntity.setUpdateDate(dateConfig.now());
+//        }
+        //2.
+        try {
+            // 1. Xử lý ngày tạo
+            if (studentRequest.getCreateDate() != null && !studentRequest.getCreateDate().isEmpty()) {
+                studentEntity.setCreateDate(dateConfig.fromString(studentRequest.getCreateDate()));
+            } else {
+                studentEntity.setCreateDate(dateConfig.now());
+            }
+
+            // 2. Xử lý ngày cập nhật
+            if (studentRequest.getUpdateDate() != null && !studentRequest.getUpdateDate().isEmpty()) {
+                studentEntity.setUpdateDate(dateConfig.fromString(studentRequest.getUpdateDate()));
+            } else {
+                studentEntity.setUpdateDate(dateConfig.now());
+            }
+
+        } catch (ParseException e) {
+            throw new RuntimeException("Invalid date format. Expecting dd/MM/yyyy HH:mm:ss", e);
+        }
+
+        // studentEntity.setCreateDate(dateConfig.fromLocalDate(LocalDate.now()));
+        // studentEntity.setUpdateDate(dateConfig.fromLocalDateTime(LocalDateTime.now()));
+
         return studentRepository.save(studentEntity);
     }
 
@@ -104,7 +141,7 @@ public class StudentService {
                 .orElseThrow(() -> new AppException(ErrorCode.ID_NOT_FOUND));
         validateStudentRequest(studentRequest, true);
         mapRequestToEntity(studentRequest, studentEntity);
-        studentEntity.setUpdateDate(new Date());
+        studentEntity.setUpdateDate(dateConfig.now());
         return studentRepository.save(studentEntity);
     }
 
