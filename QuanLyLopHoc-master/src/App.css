@@ -1,38 +1,106 @@
 .App {
   text-align: center;
-}
-
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
+  padding: 30px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f4f7fa;
   min-height: 100vh;
+}
+
+.container h1 {
+  color: red;
+}
+
+.title {
+  font-size: 28px;
+  margin-bottom: 30px;
+  color: #333;
+}
+.media-preview {
+  width: 300px;         /* Giới hạn chiều rộng khung hiển thị */
+  height: 200px;        /* Giới hạn chiều cao khung hiển thị */
+  overflow: hidden;     /* Ẩn phần bị tràn */
+  border: 1px solid #ccc;
+  border-radius: 8px;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
+  background-color: #f9f9f9;
+}
+.avatar-preview {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin-top: 10px;
+  border: 2px solid #ddd;
+}
+.video-preview {
+  margin-top: 10px;
+}
+
+video {
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.15);
+}
+
+.avatar-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.media-preview img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;  /* Co ảnh lại vừa khung, không bị méo */
+}
+
+.section {
+  background: #ffffff;
+    padding: 29px;
+    border-radius: 16px;
+    box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 32px;
+    max-width: 710px;
+    max-height: 320px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.section label {
+  font-weight: bold;
+  display: block;
+  margin-bottom: 10px;
+}
+
+.section input[type="file"] {
+  margin-bottom: 10px;
+}
+
+.preview {
+  margin-top: 15px;
+}
+
+.preview img,
+.preview video {
+  width: 100%;
+  max-height: 300px;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+button {
+  margin-top: 10px;
+  padding: 8px 16px;
+  background-color: #007bff;
+  border: none;
   color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
 }
 
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+button:hover {
+  background-color: #0056b3;
 }

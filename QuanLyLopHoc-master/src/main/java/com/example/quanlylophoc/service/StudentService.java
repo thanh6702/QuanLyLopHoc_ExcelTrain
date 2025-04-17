@@ -14,10 +14,8 @@ import com.example.quanlylophoc.entity.StudentEntity;
 import com.example.quanlylophoc.entity.UserEntity;
 import com.example.quanlylophoc.repository.ClassRepository;
 import com.example.quanlylophoc.repository.StudentRepository;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
 
@@ -26,11 +24,15 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
+@Slf4j
 @Service
 public class StudentService {
     private final StudentRepository studentRepository;
@@ -168,41 +170,76 @@ public class StudentService {
         studentEntity.setClassId(studentRequest.getClassId());
     }
 
-    public ByteArrayInputStream exportStudentsToExcel() {
+    public byte[] exportStudentsToExcel() {
+        log.info("Start exportStudentsToExcel");
+
         List<StudentEntity> students = studentRepository.findAll();
-        String filePath = "D:/Excel_Train/students.xlsx";
+        log.info("Students fetched: {}", students.size());
+
         try (Workbook workbook = new XSSFWorkbook();
-             FileOutputStream fileOut = new FileOutputStream(filePath);
              ByteArrayOutputStream out = new ByteArrayOutputStream()) {
 
             Sheet sheet = workbook.createSheet("Students");
+            CreationHelper createHelper = workbook.getCreationHelper();
+
+            // Định dạng ngày
+            CellStyle dateCellStyle = workbook.createCellStyle();
+            dateCellStyle.setDataFormat(createHelper.createDataFormat().getFormat("dd/MM/yyyy"));
+
             int rowNum = 0;
-
-            // Tạo header row
-            Row headerRow = sheet.createRow(rowNum++);
             String[] headers = {"ID", "Name", "Code", "Class ID", "Create Date"};
+
+            // Thêm header
+            Row headerRow = sheet.createRow(rowNum++);
             for (int i = 0; i < headers.length; i++) {
-                Cell cell = headerRow.createCell(i);
-                cell.setCellValue(headers[i]);
+                headerRow.createCell(i).setCellValue(headers[i]);
             }
 
-            // Ghi dữ liệu vào các hàng
-            for (StudentEntity studentEntity : students) {
+            // Thêm dữ liệu sinh viên
+            for (StudentEntity student : students) {
+                log.info("Processing student: {}", student.getId());
                 Row row = sheet.createRow(rowNum++);
-                row.createCell(0).setCellValue(studentEntity.getId());
-                row.createCell(1).setCellValue(studentEntity.getName());
-                row.createCell(2).setCellValue(studentEntity.getCode());
-                row.createCell(3).setCellValue(studentEntity.getClassId());
-                row.createCell(4).setCellValue(
-                        studentEntity.getCreateDate() != null ? studentEntity.getCreateDate().toString() : "");
+                row.createCell(0).setCellValue(student.getId());
+                row.createCell(1).setCellValue(student.getName());
+                row.createCell(2).setCellValue(student.getCode());
+                row.createCell(3).setCellValue(student.getClassId());
+
+                // Lấy giá trị CreateDate
+                Object createDateObj = student.getCreateDate();
+                if (createDateObj != null) {
+                    Cell dateCell = row.createCell(4);
+
+                    if (createDateObj instanceof LocalDate localDate) {
+                        Date date = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+                        dateCell.setCellValue(date);
+                    } else if (createDateObj instanceof LocalDateTime localDateTime) {
+                        Date date = Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
+                        dateCell.setCellValue(date);
+                    } else if (createDateObj instanceof Date date) {
+                        dateCell.setCellValue(date);
+                    } else {
+                        log.warn("Unsupported date type: {}", createDateObj.getClass());
+                        dateCell.setCellValue(createDateObj.toString());
+                    }
+
+                    // Đặt định dạng ngày cho ô
+                    dateCell.setCellStyle(dateCellStyle);
+                }
             }
+
             workbook.write(out);
-            workbook.write(fileOut);
-            return new ByteArrayInputStream(out.toByteArray());
+            log.info("Workbook written successfully");
+            return out.toByteArray();
+
         } catch (IOException e) {
+            log.error("IOException during exportStudentsToExcel", e);
             throw new AppException(ErrorCode.EXPORT_FAILED);
+        } catch (Exception e) {
+            log.error("Unexpected error during exportStudentsToExcel", e);
+            throw new AppException(ErrorCode.INTERNAL_ERROR);
         }
     }
+
 
     public void importStudentsFromExcel(ByteArrayInputStream inputStream) {
         try (Workbook workbook = new XSSFWorkbook(inputStream)) {
@@ -214,24 +251,69 @@ public class StudentService {
                 Row row = sheet.getRow(rowNum++);
                 if (row == null) continue;
 
-                String name = row.getCell(1).getStringCellValue();
-                String code = row.getCell(2).getStringCellValue();
-                int classId = (int) row.getCell(3).getNumericCellValue();
+                String name = "";
+                String code = "";
+                int classId = 0;
+                Date createDate = null;
 
-                if (studentRepository.existsByCode(code)) {
-                    continue;
+                try {
+                    // Lấy dữ liệu từ các cột, kiểm tra nếu có giá trị hợp lệ
+                    name = row.getCell(1) != null ? row.getCell(1).getStringCellValue() : "";
+                    code = row.getCell(2) != null ? row.getCell(2).getStringCellValue() : "";
+                    classId = row.getCell(3) != null ? (int) row.getCell(3).getNumericCellValue() : 0;
+
+                    // Lấy dữ liệu cho CreateDate
+                    if (row.getCell(4) != null && row.getCell(4).getCellType() == CellType.STRING) {
+                        String dateStr = row.getCell(4).getStringCellValue();
+                        try {
+                            // Chuyển đổi từ String sang Date (dùng SimpleDateFormat nếu cần)
+                            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+                            createDate = sdf.parse(dateStr);
+                        } catch (ParseException e) {
+                            log.error("Invalid date format at row {}: {}", rowNum, dateStr);
+                        }
+                    } else if (row.getCell(4) != null && row.getCell(4).getCellType() == CellType.NUMERIC) {
+                        createDate = row.getCell(4).getDateCellValue();
+                    }
+
+                } catch (Exception e) {
+                    log.error("Error reading data from row {}: {}", rowNum, e.getMessage());
+                    continue; // Bỏ qua dòng này nếu có lỗi trong việc đọc dữ liệu
                 }
 
+                // Kiểm tra dữ liệu đầu vào hợp lệ
+                if (name.isEmpty() || code.isEmpty() || classId == 0) {
+                    log.warn("Invalid data at row {}. Skipping.", rowNum);
+                    continue; // Bỏ qua dòng này nếu dữ liệu không hợp lệ
+                }
+
+                // Kiểm tra nếu sinh viên đã tồn tại
+//                if (studentRepository.existsByCode(code)) {
+//                    log.warn("Student with code {} already exists. Skipping.", code);
+//                    continue;
+//                }
+
+                // Tạo đối tượng StudentEntity và lưu vào database
                 StudentEntity studentEntity = new StudentEntity();
                 studentEntity.setName(name);
                 studentEntity.setCode(code);
                 studentEntity.setClassId(classId);
-                studentEntity.setCreateDate(new Date());
+                studentEntity.setCreateDate(createDate != null ? createDate : new Date()); // Nếu createDate null thì dùng ngày hiện tại
 
-                studentRepository.save(studentEntity);
+                try {
+                    studentRepository.save(studentEntity);
+                } catch (Exception e) {
+                    log.error("Error saving student with code {}: {}", studentEntity.getCode(), e.getMessage());
+                    continue; // Tiếp tục với sinh viên khác nếu có lỗi
+                }
             }
         } catch (IOException e) {
+            log.error("IOException while reading Excel file: {}", e.getMessage());
+            throw new AppException(ErrorCode.IMPORT_FAILED);
+        } catch (Exception e) {
+            log.error("Unexpected error while importing students: {}", e.getMessage());
             throw new AppException(ErrorCode.IMPORT_FAILED);
         }
     }
+
 }

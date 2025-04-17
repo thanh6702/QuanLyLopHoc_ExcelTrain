@@ -30,7 +30,7 @@ public class SercurityConfig {
     private String signerKey;
     private final String[] PUBLIC_URLS = {"/auth/**","/schedules/**",
             "/schedules/classes/{classId}/subjects","/classes/{classId}/subjects"
-    ,"/rooms/**"};
+    ,"/rooms/**","/students/**"};
 
     private final JwtFilter jwtFilter;
     private final JWTAuthEntryPoint jwtAuthEntryPoint;

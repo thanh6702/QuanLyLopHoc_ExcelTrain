@@ -147,7 +147,6 @@
                     .build();
         }
 
-
         public PagedUserResponse getAllUsersWithSearchPaging(String keyword, int page, int size) {
             int offset = page * size;
 
@@ -170,13 +169,9 @@
                     .build();
         }
 
-
-
         public Page<UserEntity> getAllUsersWithPageable(Pageable pageable) {
             return userRepository.findAllUsersWithPageable(pageable);
         }
-
-
         public List<UserInfoResponse> getAllUsersWithPaging(int page, int size) {
             int offset = page * size;
             List<UserEntity> users = userRepository.findAllUsersWithPagination(size, offset);
@@ -189,7 +184,6 @@
                             .build())
                     .collect(Collectors.toList());
         }
-
 
         public String login(LoginRequest request) {
             Optional<UserEntity> userOpt = userRepository.findByUsername(request.getUsername());
@@ -206,7 +200,5 @@
             String token = jwtTokenProvider.generateToken(user.getUsername());
             return "Bearer " + token;
         }
-
-
 
     }

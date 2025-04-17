@@ -36,6 +36,10 @@ spring:
     hibernate:
       ddl-auto: update
     database-platform: org.hibernate.dialect.MySQL8Dialect
+  servlet:
+    multipart:
+      max-file-size: 100MB  # Đặt kích thước tối đa cho mỗi file (ví dụ 100MB)
+      max-request-size: 100MB  # Đặt kích thước tối đa cho tổng thể yêu cầu upload
 
 jwt:
   signerKey: "BaF0iztmWY0sER0dO0IWZczUEYDeADDxhD+CPzewPFnesrqV/3sXxXlmrix0AjTG"
@@ -55,6 +59,10 @@ jwt:
           starttls:
             enable: true
 
+logging:
+  level:
+    org.springframework: DEBUG
+    com.yourpackage: DEBUG
 
 
 minio:
@@ -62,3 +70,4 @@ minio:
   access-key: minioadmin
   secret-key: minio123
   bucket: user-avatar
+  video-bucket : user-video

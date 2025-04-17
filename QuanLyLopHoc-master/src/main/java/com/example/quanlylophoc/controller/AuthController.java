@@ -10,16 +10,25 @@ import com.example.quanlylophoc.repository.UserRepository;
 import com.example.quanlylophoc.service.AuthService;
 import com.example.quanlylophoc.service.EmailService;
 import com.example.quanlylophoc.service.MinioService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
-import java.util.List;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
 
+@CrossOrigin(origins = "http://localhost:3000", maxAge = 3600, allowCredentials = "true")
 @RestController
+@Slf4j
 @RequestMapping("/auth")
 public class AuthController {
 
@@ -39,20 +48,78 @@ public class AuthController {
         this.emailService = emailService;
     }
 
-    @GetMapping("/test")
-    public String testMail() {
-        emailService.sendEmail("thanhdao672002@gmail.com", "Hello!", "Test mail from Spring Boot");
-        return "Email sent!";
+    @GetMapping("/{id}/profile")
+    public ResponseEntity<?> getProfile(@PathVariable int id) {
+        UserEntity user = userRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+        return ResponseEntity.ok(APIResponse.success(user));
     }
+    @PostMapping("/video")
+    public ResponseEntity<?> uploadVideo(@RequestParam("video") MultipartFile video,
+                                         @RequestParam("userId") int userId) {
+        try {
+            // Validate video
+            if (video.isEmpty()) {
+                return ResponseEntity.badRequest().body("Video is empty");
+            }
+
+            // Tìm user theo userId
+            Optional<UserEntity> optionalUser = userRepository.findById(userId);
+            if (optionalUser.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+            }
+
+            UserEntity user = optionalUser.get();
+
+            // Upload video vào Minio và lấy video URL
+            String videoUrl = minioService.uploadVideo(video);
+
+            // Cập nhật videoUrl cho user
+            user.setVideoUrl(videoUrl);
+            userRepository.save(user);
+
+            return ResponseEntity.ok("Video uploaded successfully");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Upload failed: " + e.getMessage());
+        }
+    }
+
 
     @PutMapping("/{id}/profile")
     public ResponseEntity<?> updateProfile(
             @PathVariable int id,
             @ModelAttribute UserProfileRequest request
     ) {
-        UserEntity updated = authService.updateUserProfile(id, request.getName(),request.getUsername() ,request.getPassword(), request.getAvatar());
-        return ResponseEntity.ok(APIResponse.success(updated));
+        try {
+            // Cập nhật thông tin
+            UserEntity user = authService.updateUserProfile(id, request.getName(), request.getUsername(), request.getPassword(), request.getAvatar());
+
+            // Upload video nếu có
+            if (request.getVideo() != null && !request.getVideo().isEmpty()) {
+                String videoUrl = minioService.uploadVideo(request.getVideo());
+                user.setVideoUrl(videoUrl);
+                userRepository.save(user);
+            }
+
+            UserResponse response = UserResponse.builder()
+                    .id(user.getId())
+                    .name(user.getName())
+                    .username(user.getUsername())
+                    .avatarUrl(user.getAvatarUrl())
+                    .videoUrl(user.getVideoUrl())  // Đảm bảo trả về videoUrl nếu muốn
+                    .build();
+
+            return ResponseEntity.ok(APIResponse.success(response));
+        } catch (Exception e) {
+            log.error("Lỗi khi cập nhật profile:", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    Map.of("message", "Lỗi khi cập nhật profile", "error", e.getMessage())
+            );
+        }
     }
+
 
     @PutMapping("/{id}/profileConvertBase64")
     public ResponseEntity<?> updateProfileBase64(

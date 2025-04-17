@@ -15,4 +15,5 @@ public class UserProfileRequest {
     private String username;
     private String password;
     private MultipartFile avatar;
+    private MultipartFile video;
 }

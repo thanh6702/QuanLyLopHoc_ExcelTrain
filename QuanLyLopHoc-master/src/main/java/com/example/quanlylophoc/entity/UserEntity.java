@@ -28,6 +28,9 @@ public class UserEntity {
     @Column(name = "avatar_url", length = 1000)
     private String avatarUrl;
 
+    @Column(name = "video_url", length = 1000)
+    private String videoUrl;
+
 
     @Transient  // Đánh dấu trường này không được lưu vào database
     private List<GrantedAuthority> authorities;

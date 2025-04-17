@@ -15,5 +15,6 @@ public class UserResponse {
     private String name;
     private String username;
     private String avatarUrl;
+    private String videoUrl;
     private String avatarBase64;
 }

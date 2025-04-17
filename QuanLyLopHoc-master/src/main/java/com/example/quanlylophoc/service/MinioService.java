@@ -3,19 +3,31 @@ package com.example.quanlylophoc.service;
 import com.example.quanlylophoc.DTO.Response.UserResponse;
 import com.example.quanlylophoc.entity.UserEntity;
 import io.minio.*;
+import io.minio.errors.MinioException;
 import io.minio.http.Method;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.text.Normalizer;
 import java.util.Base64;
+import java.util.UUID;
 
 @Service
+@Slf4j
 public class MinioService {
     @Value("${minio.bucket}")
     private String bucketName;
+
+    @Value("${minio.video-bucket}")
+    private String bucketVideo;
+
+    @Value("${minio.url}")
+    private String minioUrl;
 
     private final MinioClient minioClient;
 
@@ -57,6 +69,40 @@ public class MinioService {
             throw new RuntimeException("Upload failed", e);
         }
     }
+
+    public String uploadVideo(MultipartFile file) throws Exception {
+
+        // Lấy tên gốc của file và chuẩn hóa tên file
+        String originalFileName = file.getOriginalFilename();
+        String safeFileName = Normalizer.normalize(originalFileName, Normalizer.Form.NFD)
+                .replaceAll("[^\\p{ASCII}]", "")
+                .replaceAll("[^a-zA-Z0-9\\.\\-_]", "_");
+
+        String objectName = "video_" + UUID.randomUUID() + "_" + safeFileName;
+        System.out.println("Uploading cleaned video name: " + objectName);
+
+        // Kiểm tra và tạo bucket nếu chưa tồn tại
+        boolean found = minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucketVideo).build());
+        if (!found) {
+            minioClient.makeBucket(MakeBucketArgs.builder().bucket(bucketVideo).build());
+        }
+
+        try (InputStream inputStream = file.getInputStream()) {
+            // Upload video lên Minio
+            minioClient.putObject(
+                    PutObjectArgs.builder()
+                            .bucket(bucketVideo)
+                            .object(objectName)
+                            .stream(inputStream, file.getSize(), -1)
+                            .contentType(file.getContentType())
+                            .build()
+            );
+        }
+
+        // Trả về URL của video đã upload
+        return minioUrl + "/" + bucketVideo + "/" + objectName;
+    }
+
 
 
     public String convertImageUrlToBase64(String imageUrl) {

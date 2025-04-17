@@ -1,71 +1,182 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import './App.css';
 
-export default function MediaUpload() {
-  const [image, setImage] = useState(null);
-  const [video, setVideo] = useState(null);
-  const [excel, setExcel] = useState(null);
+function App() {
+  const [user, setUser] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [videoFile, setVideoFile] = useState(null);
+  const [videoUrl, setVideoUrl] = useState('');
 
-  const handleFileChange = (e, setter) => {
-    const file = e.target.files[0];
-    if (file) setter(file);
+  const fetchUserProfile = () => {
+    axios.get('http://localhost:8080/api/auth/8/profile', { withCredentials: true })
+      .then((response) => {
+        if (response.data?.status === 200 && response.data.data) {
+          const userData = response.data.data;
+          setUser(userData);
+          setVideoUrl(userData.videoUrl || '');
+        }
+      })
+      .catch((error) => {
+        console.error('Fetch error:', error);
+      });
   };
 
-  const downloadFile = (file, name) => {
-    const url = URL.createObjectURL(file);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = name;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  useEffect(() => {
+    fetchUserProfile();
+  }, []);
+
+  const handleFileChange = (event) => {
+    setSelectedFile(event.target.files[0]);
+  };
+
+  const handleUpload = () => {
+    if (!selectedFile) {
+      alert("Vui lòng chọn file Excel trước khi upload!");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", selectedFile);
+
+    axios.post('http://localhost:8080/api/students/import', formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    })
+      .then((response) => {
+        alert("Import thành công: " + response.data.message);
+      })
+      .catch((error) => {
+        console.error("Upload lỗi:", error);
+        alert("Lỗi khi import file");
+      });
+  };
+
+  const handleExport = async () => {
+    try {
+      const response = await axios.get('http://localhost:8080/api/students/export', {
+        responseType: 'blob',
+      });
+
+      const contentType = response.headers['content-type'];
+      if (contentType?.includes('application/json')) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          try {
+            const json = JSON.parse(reader.result);
+            alert(json.message || "Không thể export dữ liệu!");
+          } catch (err) {
+            alert("Không thể export dữ liệu (Lỗi nội dung không hợp lệ)");
+          }
+        };
+        reader.readAsText(response.data);
+        return;
+      }
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'students.xlsx');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (error) {
+      console.error("Lỗi khi export file:", error);
+      alert("Không thể export dữ liệu (Lỗi hệ thống)");
+    }
+  };
+
+  const handleUploadVideo = () => {
+    if (!videoFile) {
+      alert("Vui lòng chọn video!");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("video", videoFile);
+
+    axios.post("http://localhost:8080/api/auth/video", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    })
+      .then(() => {
+        alert("Upload video thành công!");
+        setVideoFile(null); // Xóa video tạm
+        fetchUserProfile(); // Tải lại profile để cập nhật video mới
+      })
+      .catch((err) => {
+        console.error("Lỗi khi upload video:", err);
+        alert("Lỗi khi upload video");
+      });
   };
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Upload & Display Image */}
-      <div>
-        <label className="block mb-2 font-semibold">Upload Image:</label>
-        <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, setImage)} />
-        {image && (
-          <div className="mt-4">
-            <img src={URL.createObjectURL(image)} alt="Uploaded" className="w-48 rounded shadow" />
-            <button onClick={() => downloadFile(image, 'downloaded-image.png')} className="mt-2 text-blue-500 underline">
-              Download Image
-            </button>
-          </div>
-        )}
-      </div>
+    <div className="container">
+      <h1>Thông tin người dùng</h1>
 
-      {/* Upload & Display Video */}
-      <div>
-        <label className="block mb-2 font-semibold">Upload Video:</label>
-        <input type="file" accept="video/*" onChange={(e) => handleFileChange(e, setVideo)} />
-        {video && (
-          <div className="mt-4">
-            <video controls className="w-96 rounded shadow">
-              <source src={URL.createObjectURL(video)} type={video.type} />
-              Your browser does not support the video tag.
-            </video>
-            <button onClick={() => downloadFile(video, 'downloaded-video.mp4')} className="mt-2 text-blue-500 underline">
-              Download Video
-            </button>
-          </div>
-        )}
-      </div>
+      {user ? (
+        <div>
+          <p><strong>Username:</strong> {user.username}</p>
+          <p><strong>Name:</strong> {user.name}</p>
 
-      {/* Upload Excel File */}
-      <div>
-        <label className="block mb-2 font-semibold">Upload Excel File:</label>
-        <input type="file" accept=".xlsx,.xls" onChange={(e) => handleFileChange(e, setExcel)} />
-        {excel && (
-          <div className="mt-4">
-            <p className="mb-1">Uploaded: {excel.name}</p>
-            <button onClick={() => downloadFile(excel, 'downloaded-file.xlsx')} className="text-blue-500 underline">
-              Download Excel
-            </button>
-          </div>
-        )}
-      </div>
+          {user.avatarUrl && (
+            <div className="avatar-preview">
+              <img src={user.avatarUrl} alt="Avatar" width="100" height="100" />
+            </div>
+          )}
+
+          {videoUrl && (
+            <div className="video-preview">
+              <video width="480" controls>
+                <source src={videoUrl} type="video/mp4" />
+                Trình duyệt của bạn không hỗ trợ thẻ video.
+              </video>
+            </div>
+          )}
+        </div>
+      ) : (
+        <p>Đang tải thông tin...</p>
+      )}
+
+      <hr />
+
+      <h2>Import danh sách sinh viên</h2>
+      <input type="file" accept=".xlsx" onChange={handleFileChange} />
+      <button onClick={handleUpload}>Upload file Excel</button>
+
+      <hr />
+
+      <h2>Export danh sách sinh viên</h2>
+      <button onClick={handleExport}>Tải xuống file Excel</button>
+
+      <hr />
+
+      <h2>Upload video</h2>
+      <input
+        type="file"
+        accept="video/*"
+        onChange={(e) => {
+          const file = e.target.files[0];
+          if (file) {
+            setVideoFile(file);
+          }
+        }}
+      />
+      <button onClick={handleUploadVideo}>Upload video</button>
+
+      {videoFile && (
+        <div className="video-preview">
+          <p><em>Video preview trước khi upload:</em></p>
+          <video width="480" controls>
+            <source src={URL.createObjectURL(videoFile)} type={videoFile.type} />
+            Trình duyệt của bạn không hỗ trợ thẻ video.
+          </video>
+        </div>
+      )}
     </div>
   );
 }
+
+export default App;

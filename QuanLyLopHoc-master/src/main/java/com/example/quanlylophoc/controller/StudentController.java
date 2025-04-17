@@ -15,7 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
 import java.util.List;
-
+@CrossOrigin(origins = "http://localhost:3000")
 @RestController
 @RequestMapping("/students")
 @RequiredArgsConstructor
@@ -80,12 +80,14 @@ public class StudentController {
     // Export students to Excel
     @GetMapping("/export")
     public ResponseEntity<byte[]> exportStudentsToExcel() {
-        ByteArrayInputStream byteArrayInputStream = studentService.exportStudentsToExcel();
+        byte[] fileBytes = studentService.exportStudentsToExcel();
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=students.xlsx")
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .body(byteArrayInputStream.readAllBytes());
+                .body(fileBytes);
     }
+
+
 
     // Import students from Excel
     @PostMapping("/import")
